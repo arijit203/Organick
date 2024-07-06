@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon"  href="static/images/favicon.png">
+    
+    <title>Home &mdash; Grocery Website</title>
+    <!-- Link Swiper's CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="static/css/styles.css" />
+    <style>.scrolled {
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add a box shadow when scrolled */
+      /* Add any other styles you want for the scrolled state */
+  }</style>
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">  -->
+  </head>
+  <body>
+    <div class="navbar-container">
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-secondary alert-dismissible fade show" role="alert" id="flashMessage">
+        <strong>{{message}}</strong> 
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+        
+    {% endfor %}
+
+    <nav class="nav">
+      
+      <div class="container nav_container">
+        <div class="logo_box">
+          <div class="logo_box"><img src="static/images/icon/Logo.svg" alt="" class="logo"/></div>
+        </div>
+        <ul class="nav_list">
+          <li class="nav_item"><a href="home" class="nav_link">Home</a></li>
+          <li class="nav_item"><a href="about" class="nav_link">About</a></li>
+          <li class="nav_item"><a href="shop" class="nav_link">Shop</a></li>
+          <li class="nav_item"><a href="portfolio" class="nav_link">Projects</a></li>
+          <li class="nav_item"><a href="blog" class="nav_link">News</a></li>
+          <li class="nav_item"><a href="contact" class="nav_link">Contact</a></li>
+        </ul>
+        <div class="nav_list1">
+          <div class="user_button" id="user-btn">
+            <img src="static/images/icon/user.png" alt="User" class="user_icon" />
+          </div>
+          <div class="user_button" id="cart-btn">
+            <img src="static/images/icon/shopping-bag-icon.png" alt="Cart" class="user_icon" />
+          </div>
+          <div class="user_button fas" id="search-btn" >
+            <img src="static/images/icon/search.png" alt="search-option" class="user_icon" />
+          </div>
+          <form action="" class="search-form" id="search-form" style="position: fixed;
+          margin-top: 15px;">
+            <input  placeholder="Search Here..." id="search-box"></input>
+            <label for="search-box" class="fas fa-search"></label>
+          </form>
+        </div>
+        <div class="shopping-cart" style="position: fixed;
+        margin-top: 15px;">
+          {% if current_user.is_authenticated %}
+              {% if cart_items %}
+                  {% for cart_item,item,category in cart_items %}
+                      <div class="box" data-item-id="{{ cart_item.item_id }}">
+                        <a href="#" class="delete-from-cart">
+                          <i class="fas fa-times"></i>
+                        </a>
+                        
+                        <img class="imi" src="static/images/items/{{ item.name|replace(' ', '_')}}.png" alt="{{ item.name }}">
+                        <div class="content">
+                            <h3>{{ item.name }}</h3>
+                            <span class="quantity">{{ cart_item.quantity }}</span>
+                            <span class="multiply">x</span>
+                            <span class="price">₹{{ item.price }}</span>
+                        </div>
+                      </div>
+                  {% endfor %}
+                  <h3 class="total">Total: <span>₹{{ total_price }}</span></h3>
+                  <a href="/cart" class="btn" style="font-size: 1.5rem;">Checkout Cart</a>
+              {% else %}
+                  <p>Your cart is empty.</p>
+              {% endif %}
+          {% else %}
+              <p>Please log in to view your cart.</p>
+          {% endif %}
+      </div>
+      
+        <form method="POST" action="user_login"  class="login-form" style="position: fixed;
+        margin-top: 15px;">
+          {% if current_user.is_authenticated %}
+              
+              <h3>Welcome, {{ current_user.username }}!</h3>
+              <!-- Display other user information as needed -->
+              <a href="{{ url_for('user_orders') }}" class="btn1 btn-your-orders" style="color: black;">Your Orders</a>
+              <a href="{{ url_for('user_logout') }}" class="btn">Logout</a>
+          {% else %}
+              {{ form.csrf_token }}
+              <h3>Login Form</h3>
+              {{ form.email(class="box", placeholder="Enter email", required=true) }}
+              {{ form.password_hash(class="box", placeholder="Enter Password", required=true) }}
+      
+              <div class="remember">
+                  <input type="checkbox" name="" id="remember-me">
+                  <label for='remember-me'>Remember me</label>
+              </div>
+              
+              <button type="submit" class="btn">Login Now</button>
+              <p>Forget password? <a href="user_login#forgotPasswordModal" id="forgotPasswordLink">Click here</a></p>
+              <p>Don't have an account? <a href="user_register">Create one</a></p>
+              <p>Not a User? <a href="manager_login">Manager</a></p>
+          {% endif %}
+      </form>
+      
+      
+      </div>
+    </nav>
+  </div>
+
+    <header class="header">
+      <div class="header_container container">
+        <div class="header_wrapper">
+          <h4 class="header_title_2">100% Natural Food</h4>
+          <h1 class="header_title_main">Choose the best healthier way of life</h1>
+          <a href="{{url_for('shop')}}"><button class="header_btn">Explore Now <img src="static/images/icon/arrow.png" alt="" class="btn_icon"></img></button></a>
+
+        </div>
+      </div>
+    </header>
+    <!-- 2nd page -->
+    <section class="ads">
+      <div class="container ads_container">
+        <div class="ad">
+          <img src="static/images/ad-1.png" alt="" class="ad_image">
+          <div class="ad_content">
+            <div class="ad_title_2">Natural!</div>
+            <h2 class="ad_title_1">Get Garden Fresh Food</h2>
+          </div>
+        </div>
+        <div class="ad">
+          <img src="static/images/ad-2.png" alt="" class="ad_image">
+          <div class="ad_content">
+            <div class="ad_title_2">Offer!</div>
+            <h2 class="ad_title_1">Get 10% off on Vegetables</h2>
+            <h4>Use code FRST20</h4>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- 3rd page -->
+    <section class="about">
+      <div class="container about_container">
+        <img src="static/images/about-us.png" alt="" class="about_img">
+        <div class="about_content">
+          <h4 class="about_title_2">About Us</h4>
+          <h2 class="about_title_1">We Believe in Working Accredited Farmers</h2>
+          
+          <div class="icon_box">
+            <img src="static/images/icon/organic.svg" alt="" class="about_icon">
+            <div class="icon_content">
+              <h3 class="icon_box_title">Orgainc Food Only</h3>
+              <p class='about_text'>Immerse yourself in a world of taste and well-being. Our organic offerings not only burst with unparalleled freshness but also contribute to a healthier planet. Say goodbye to harmful chemicals and embrace the vitality that nature intended.</p>
+
+            </div>
+          </div>
+          <div class="icon_box">
+            <img src="static/images/icon/quality.svg" alt="" class="about_icon">
+            <div class="icon_content">
+              <h3 class="icon_box_title">Quality Standards</h3>
+              <p class='about_text'>Our organic selections undergo meticulous testing to guarantee they are free from pesticides, synthetic fertilizers, and genetically modified organisms. We believe in providing you with food as nature intended, untainted by harmful chemicals.</p>
+
+              <!-- <p class='about_text'>lorem ipsum</p> -->
+              
+            </div>
+          </div>
+          <a href="{{ url_for('shop') }}"><button class="about_btn" >Shop Now <img src="static/images/icon/arrow.png" alt="" class="btn_icon"></button></a>
+      </div>
+      </div>
+      
+    </section>
+    <!-- 4th page -->
+    <section class="product" style="height: 1030px;">
+      <div class="container6">
+        <div class="section_header_center">
+          <h5 class="header_section_title_2">Categories</h5>
+          <h2 class="header_section_title_1">Our Products</h2>
+        </div>
+        <div class="products">
+          <div class="product_card">
+            <img src="static/images/items/Orange.png" alt="" class="product_img" />
+            <p class="product_tag">Fruit</p>
+            <div class="product_body">
+              <h3 class="product_title">Orange</h3>
+              <div class="product_footer">
+                <h4 class="product_price">Rs. 35.00/kg</h4>
+                <div class="product_rating">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="product_card">
+            <img src="static/images/items/Cabbage.png" alt="" class="product_img">
+            <p class="product_tag">Vegteable</p>
+            <div class="product_body">
+              <h3 class="product_title">Cabbage</h3>
+              <div class="product_footer">
+                <h4 class="product_price">Rs. 20.00/Kg</h4>
+                <div class="product_rating">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="product_card">
+            <img src="static/images/items/Blue_Grapes.png" alt="" class="product_img">
+            <p class="product_tag">Fruit</p>
+            <div class="product_body">
+              <h3 class="product_title">Blue Grapes</h3>
+              <div class="product_footer">
+                <h4 class="product_price">Rs. 25.00/kg</h4>
+                <div class="product_rating">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="product_card">
+            <img src="static/images/items/Onion.png" alt="" class="product_img">
+            <p class="product_tag">Vegetable</p>
+            <div class="product_body">
+              <h3 class="product_title">Onion</h3>
+              <div class="product_footer">
+                <h4 class="product_price">Rs. 40.00/kg</h4>
+                <div class="product_rating">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="product_card">
+            <img src="static/images/items/Mountain_Dew.png" alt="" class="product_img">
+            <p class="product_tag">Beverage</p>
+            <div class="product_body">
+              <h3 class="product_title">Mountain Dew</h3>
+              <div class="product_footer">
+                <h4 class="product_price">Rs. 40.00/L</h4>
+                <div class="product_rating">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="product_card">
+            <img src="static/images/items/Lichi.png" alt="" class="product_img">
+            <p class="product_tag">Fruit</p>
+            <br><br>
+            <div class="product_body">
+              <h3 class="product_title">Litchi</h3>
+              
+              <div class="product_footer">
+                <h4 class="product_price">Rs. 200.00/kg</h4>
+                <div class="product_rating">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="product_card">
+            <img src="static/images/items/Cherry_Tomato.png" alt="" class="product_img">
+            <p class="product_tag">Vegetable</p>
+            <div class="product_body">
+              <h3 class="product_title">Cherry Tomato</h3>
+              <div class="product_footer">
+                <h4 class="product_price">Rs. 14.00/kg</h4>
+                <div class="product_rating">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="product_card">
+            <img src="static/images/items/Limca.png" alt="" class="product_img">
+            <p class="product_tag">Beverage</p>
+            <div class="product_body">
+              <h3 class="product_title">Limca</h3>
+              <div class="product_footer">
+                <h4 class="product_price">Rs. 60.00/L</h4>
+                <div class="product_rating">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="button">
+          <a class="products_btn" href="shop">Load More</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5th Page -->
+    <section class="review">
+        <!-- Swiper -->
+      <div class="container4 review_container">
+        <div class="section_header_center">
+          <h5 class="header_section_title_2">Testimonial</h5>
+          <h2 class="header_section_title_1">Our Products</h2>
+        </div>
+        
+        <div class="reviews">
+          <div class="swiper mySwiper">
+            <div class="swiper-wrapper">
+              <div class="swiper-slide">
+                <div class="review_card">
+                  <img src="static/images/user.jpg" alt="" class="review_img">
+                  <div class="review_rating">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                  </div>
+                  <p class="review_p">
+                    Impressively efficient, Organick streamlines my shopping with a user-friendly interface, personalized recommendations, and real-time updates on product availability. Its seamless integration with loyalty programs and timely delivery service make it my go-to choice for convenient and enjoyable grocery shopping. Highly recommended!</p>
+                  <h5 class="review_user">Marina B</h5>
+                  <p class="review_designation">Consumer</p>
+                </div>
+              </div>
+              <div class="swiper-slide">
+                <div class="review_card">
+                  <img src="static/images/user.jpg" alt="" class="review_img">
+                  <div class="review_rating">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                  </div>
+                  <p class="review_p">Impressively efficient, Organick streamlines my shopping with a user-friendly interface, personalized recommendations, and real-time updates on product availability. Its seamless integration with loyalty programs and timely delivery service make it my go-to choice for convenient and enjoyable grocery shopping. Highly recommended!</p>
+                  <h5 class="review_user">Marina B</h5>
+                  <p class="review_designation">Consumer</p>
+                </div>
+              </div>
+              <div class="swiper-slide">
+                <div class="review_card">
+                  <img src="static/images/user.jpg" alt="" class="review_img">
+                  <div class="review_rating">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                    <img src="static/images/icon/star.png" alt="" class="star">
+                  </div>
+                  <p class="review_p">Impressively efficient, Organick streamlines my shopping with a user-friendly interface, personalized recommendations, and real-time updates on product availability. Its seamless integration with loyalty programs and timely delivery service make it my go-to choice for convenient and enjoyable grocery shopping. Highly recommended!</p>
+                  <h5 class="review_user">Marina B</h5>
+                  <p class="review_designation">Consumer</p>
+                </div>
+              </div>
+            </div>
+            <div class="swiper-pagination"></div>
+          </div>
+        </div>
+        <div class="counter">
+          <div class="counter_wrapper">
+            <span>
+              <h1 class="counter_number">100%</h1>
+              <p class="counter_text">Organic</p>
+            </span>
+            
+          </div>
+          <div class="counter_wrapper">
+            <span>
+            <h1 class="counter_number">285</h1>
+            <p class="counter_text">Active Products</p>
+          </span>
+          </div>
+          <div class="counter_wrapper">
+            <span>
+            <h1 class="counter_number">350+</h1>
+            <p class="counter_text">Organic Orchads</p>
+          </span>
+          </div>
+          <div class="counter_wrapper">
+            <span>
+            <h1 class="counter_number">25+</h1>
+            <p class="counter_text">Years of Farming</p>
+          </span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- 6th Page -->
+    <section class="product product_bg">
+      <div class="container">
+        <div class="section_header_center">
+          <h2 class="product_bg_title">Our Products</h2>
+        </div>
+        <div class="products">
+          <div class="product_card">
+            <img src="static/images/items/Amul_Dahi.png" alt="" class="product_img" />
+            
+            <div class="product_body" style="margin-top: -15%;">
+              <h3 class="product_title">Amul Dahi</h3>
+              <div class="product_footer">
+                <h4 class="product_price">Rs. 24.00/kg</h4>
+                <div class="product_rating">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="product_card">
+            <img src="static/images/items/Whole_Wheat_Bread.png" alt="" class="product_img">
+            
+            <div class="product_body">
+              <h3 class="product_title">Whole Wheat Bread</h3>
+              <div class="product_footer">
+                <h4 class="product_price">Rs. 32.00/unit</h4>
+                <div class="product_rating">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="product_card">
+            <br><br>
+            <img src="static/images/items/White_Pomfret.png" alt="" class="product_img">
+            <div class="product_body">
+              <br>
+              <h3 class="product_title">White Promfret</h3>
+              <div class="product_footer">
+                <br><br>
+                <h4 class="product_price">Rs. 500/kg</h4>
+                <div class="product_rating">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="product_card">
+            <br>
+            <img src="static/images/items/Calabrese_Broccoli.png" alt="" class="product_img">
+            
+            <div class="product_body">
+              <h3 class="product_title">Calabrese Broccoli</h3>
+              <div class="product_footer">
+                <br>
+                <h4 class="product_price">Rs. 35.00/kg</h4>
+                <div class="product_rating">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                  <img src="static/images/icon/star.png" alt="" class="star">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          
+        </div>
+        <div class="button">
+          <a class="products_btn product_bg_btn"  href="shop">Load More</a>
+        </div>
+      </div>
+    </section>
+    <section class="categories">
+      <div class="category"><img src="static/images/cat-1.png" alt="" class="cat_image">
+        <p class="cat_tag">Organic Juice</p>
+      </div>
+      <div class="category"><img src="static/images/cat-2.png" alt="" class="cat_image">
+        <p class="cat_tag">Organic Food</p>
+      </div>
+      <div class="category"><img src="static/images/cat-3.png" alt="" class="cat_image">
+        <p class="cat_tag">Nuts Cookies</p>
+      </div>
+    </section>
+    <section class="blog">
+      <div class="blog_container container3">
+        <div class="section_header_flex">
+          <span>
+            <h5 class="header_section_title_2">Testimonial</h5>
+            <h2 class="header_section_title_1">Our Products</h2>
+          </span>
+          <a class="section_header_button"  href="{{url_for('blog')}}">Load More <img src="static/images/icon/arrow.png" alt="" class="btn_icon"></a>
+
+        </div>
+        <div class="blogs">
+          <div class="blog_card">
+            <img src="static/images/blog-1.png" alt="" class="blog_img">
+            <p class="blog_tag">Vegetables</p>
+            <div class="blog_body">
+              <div class="user">
+                <img src="static/images/icon/user.png" alt="" class="user_icon">
+                <p class="user_name">John Doe</p>
+              </div>
+                
+                <h2 class="blog_title">The Benefits of Vitamin D & How to Get It</h2>
+                <p class="blog_text">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Commodi tenetur quo placeat maiores!</p>
+                <button class="blog_btn">Learn More <img src="static/images/icon/arrow.png" alt="" class="button_icon"></button>
+                
+              
+            </div>
+          </div>
+          <div class="blog_card">
+            <img src="static/images/blog-2.png" alt="" class="blog_img">
+            <p class="blog_tag">Vegetables</p>
+            <div class="blog_body">
+              <div class="user">
+                <img src="static/images/icon/user.png" alt="" class="user_icon">
+                <p class="user_name">John Doe</p>
+              </div>
+                
+                <h2 class="blog_title">The Benefits of Vitamin D & How to Get It</h2>
+                <p class="blog_text">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Commodi tenetur quo placeat maiores!</p>
+                <button class="blog_btn">Learn More <img src="static/images/icon/arrow.png" alt="" class="button_icon"></button>
+                
+              
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </section>
+    <section class="subscribe">
+      <div class="container sub_container">
+        <h2 class="subscribe_text">Subscribe to <br /> our Newsletter</h2>
+        <form action="">
+          <input type="text" class="form_input" placeholder="Write your Email">
+          <button class="form_btn">Subscribe</button>
+        </form>
+      </div>
+    </section>
+    <div class="login_box" id="loginBox">
+      <div class="close_button" onclick="toggleLoginBox()">
+        <img src="static/images/icon/close-icon.png" alt="Close" class="close_icon" />
+      </div>
+      
+    </div>
+      <!-- Swiper JS -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script src="static/script.js" lang="javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+  <!-- Initialize Swiper -->
+  <script>
+    var swiper = new Swiper(".mySwiper", {
+      pagination: {
+        el: ".swiper-pagination",
+      },
+    });
+    function toggleLoginBox() {
+      var loginBox = document.getElementById("loginBox");
+      loginBox.style.display = loginBox.style.display === "none" ? "block" : "none";
+    }
+    setTimeout(function() {
+            $('#flashMessage').alert('close');
+        }, 2000);
+    $(document).ready(function () {
+      $('.shopping-cart').on('click', '.delete-from-cart', function (e) {
+        
+        e.preventDefault();
+
+        // Get the item id from the data attribute
+        var itemId = $(this).closest('.box').data('item-id');
+        
+        var csrfToken = $('meta[name=csrf-token]').attr('content');
+
+        // Include CSRF token in AJAX request headers
+        $.ajax({
+            type: 'POST',
+            url: '/delete_from_cart/' + itemId,
+            data: {csrf_token: csrfToken},  // Include CSRF token in the data
+            success: function (response) {
+                
+                // Update the cart content on the page
+                updateCartContent();
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX error:', status, error);
+                console.log(xhr.responseText); // Log the response text for more details
+            }
+        });
+    });
+
+    function updateCartContent() {
+        // Use AJAX to fetch the updated cart content from the server
+        $.ajax({
+            type: 'GET',
+            url: '/get_cart_content',
+            success: function (cartContent) {
+                // Update the cart section in your HTML with the new content
+                $('.shopping-cart').empty();
+                if (cartContent.length === 0) {
+                  $('.shopping-cart').append('<p>Your cart is empty.</p>');
+            } else {
+                // Iterate through the cart items and append them to the cart section
+                for (var i = 0; i < cartContent.length; i++) {
+                    var cartItem = cartContent[i];
+                    console.log("Hi deleted:", cartItem.item_id);
+                    var cartItemHtml = '<div class="box" data-item-id="' + cartItem.item_id + '">' +
+                        '<a href="#" class="delete-from-cart">' +
+                        '<i class="fas fa-times"></i>' +
+                        '</a>' +
+                        '<img class="imi" src="static/images/items/' + cartItem.name.replace(/\s+/g, '_').toLowerCase() + '.png" alt="' + cartItem.name + '">' +
+                        '<div class="content">' +
+                        '<h3>' + cartItem.name + '</h3>' +
+                        '<span class="quantity">' + cartItem.quantity + '</span>' +
+                        '<span class="multiply">x</span>' +
+                        '<span class="price">₹' + cartItem.price + '</span>' +
+                        '</div>' +
+                        '</div>';
+                    
+                    $('.shopping-cart').append(cartItemHtml);
+                }
+
+                // Add total price and checkout button (modify as needed)
+                $('.shopping-cart').append('<h3 class="total">Total: <span>₹' + getTotalPrice(cartContent) + '</span></h3>');
+                $('.shopping-cart').append('<a href="/cart" class="btn">Checkout Cart</a>');
+              }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error('Error fetching cart content:', textStatus, errorThrown);
+            }
+        });
+    }
+    function getTotalPrice(cartContent) {
+    var total = 0;
+    for (var i = 0; i < cartContent.length; i++) {
+        total += cartContent[i].price * cartContent[i].quantity;
+    }
+    return total.toFixed(2);
+}
+  })
+  document.addEventListener('DOMContentLoaded', function () {
+    var navbar = document.querySelector('.navbar-container');
+
+    window.addEventListener('scroll', function () {
+        if (window.scrollY > 0) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
+});
+  </script>
+  </body>
+</html>
