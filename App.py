@@ -1605,11 +1605,11 @@ def delete_category(name,category_id):
 
 
 
-# app.run(debug=True)
+app.run(debug=True)
 
 # Set the port from the environment variable, default to 10000
 
-port = int(os.environ.get('PORT', 10000))
+# port = int(os.environ.get('PORT', 10000))
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=port)
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=port)
